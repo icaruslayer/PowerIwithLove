@@ -1,0 +1,40 @@
+/* =============================================================== */ 
+/*   Program....... RtvIPAddrSrv                                   */ 
+/*   Description... Retrieve IP address of System                  */ 
+/*                                                                 */ 
+/*   DARIO SILVESTRI                                               */ 
+/* =============================================================== */ 
+                                                                      
+             PGM        PARM(&IPADDR)                                 
+                                                                      
+             DCL        VAR(&SYSNAME) TYPE(*CHAR) LEN(8)              
+             DCL        VAR(&MSGDTA) TYPE(*CHAR) LEN(100)             
+             DCL        VAR(&IPADDR) TYPE(*CHAR) LEN(15)              
+             DCL        VAR(&COMP) TYPE(*CHAR) LEN(12) +              
+                          VALUE('0123456789. ')                       
+             DCL        VAR(&SPOS) TYPE(*UINT) LEN(2)                 
+             DCL        VAR(&EPOS) TYPE(*UINT) LEN(2)                 
+             DCL        VAR(&LEN) TYPE(*UINT) LEN(2)                  
+             
+             /* Get the system name */                                         
+             RTVNETA    SYSNAME(&SYSNAME)                                      
+                                                                                
+             /* PING with the system name to get message with IP address */    
+             PING       RMTSYS(&SYSNAME)                                       
+             RCVMSG     MSGTYPE(*INFO) MSG(&MSGDTA)                            
+                                                                                
+             /* Extracts IP address from message... */                                            
+             CHGVAR     VAR(&EPOS) VALUE(%CHECKR('. ' &MSGDTA))                
+                                                                                
+             /* ...find last piece of message text before ip address */        
+             CHGVAR VAR(&SPOS) VALUE(%CHECKR(&COMP &MSGDTA))                   
+                                                                                
+             /* ...calc start of ip address */                                 
+             CHGVAR VAR(&SPOS) VALUE(&SPOS + 2)                                
+                                                                                
+             /* ...IP address */                                               
+             CHGVAR VAR(&LEN) VALUE(&EPOS - &SPOS + 1)                         
+             CHGVAR VAR(&IPADDR) VALUE(%SST(&MSGDTA &SPOS &LEN))               
+                                                                                
+                                                                                
+             ENDPGM                                                                                                                                  
